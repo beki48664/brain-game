@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Brain Master</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#0f172a;
+color:white;
+margin:0;
+}
+
+h1{
+margin-top:20px;
+}
+
+input{
+padding:10px;
+margin:10px;
+width:200px;
+}
+
+button{
+padding:15px;
+margin:10px;
+font-size:18px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+background:#22c55e;
+color:white;
+transition:0.2s;
+}
+
+button:hover{
+transform:scale(1.05);
+}
+
+.section{
+display:none;
+}
+
+.option{
+background:#1e293b;
+margin:10px;
+padding:15px;
+border-radius:10px;
+cursor:pointer;
+}
+
+.option:hover{
+background:#334155;
+}
+
+#box{
+width:150px;
+height:150px;
+background:red;
+margin:auto;
+display:none;
+}
+
+#puzzleBoard{
+display:grid;
+grid-template-columns:repeat(3,90px);
+gap:5px;
+justify-content:center;
+margin-top:20px;
+}
+
+.tile{
+width:90px;
+height:90px;
+background:#38bdf8;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:30px;
+cursor:pointer;
+border-radius:10px;
+}
+
+.ad{
+margin:20px;
+background:white;
+color:black;
+padding:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>🧠 Brain Master</h1>
+
+<div id="login">
+
+<h2>Register / Login</h2>
+
+<input id="username" placeholder="Username"><br>
+
+<input id="password" type="password" placeholder="Password"><br>
+
+<button onclick="register()">Register</button>
+
+<button onclick="login()">Login</button>
+
+<p id="msg"></p>
+
+</div>
+
+<div id="game" class="section">
+
+<button onclick="show('quiz')">IQ Test</button>
+<button onclick="show('reaction')">Reaction Game</button>
+<button onclick="show('puzzle')">Puzzle Game</button>
+
+<div class="ad">
+Reklama joyi
+</div>
+
+</div>
+
+<div id="quiz" class="section">
+
+<h2 id="question"></h2>
+
+<div id="answers"></div>
+
+<p id="score"></p>
+
+</div>
+
+<div id="reaction" class="section">
+
+<h2>Yashil bo‘lsa tez bos!</h2>
+
+<button onclick="startReaction()">Start</button>
+
+<div id="box" onclick="stopReaction()"></div>
+
+<p id="result"></p>
+
+</div>
+
+<div id="puzzle" class="section">
+
+<h2>Puzzle</h2>
+
+<div id="puzzleBoard"></div>
+
+</div>
+
+<audio id="clickSound" src="click.mp3"></audio>
+
+<script>
+
+function register(){
+
+let user=username.value
+let pass=password.value
+
+localStorage.setItem(user,pass)
+
+msg.innerText="Ro‘yxatdan o‘tildi!"
+
+}
+
+function login(){
+
+let user=username.value
+let pass=password.value
+
+let saved=localStorage.getItem(user)
+
+if(saved==pass){
+
+login.style.display="none"
+game.style.display="block"
+
+}else{
+
+msg.innerText="Login xato!"
+
+}
+
+}
+
+function show(id){
+
+document.querySelectorAll(".section").forEach(s=>{
+s.style.display="none"
+})
+
+document.getElementById(id).style.display="block"
+
+}
+
+let questions=[
+
+{q:"3,9,27,?",a:["54","81","72","90"],c:1},
+
+{q:"1,1,2,3,5,8,?",a:["13","11","12","14"],c:0},
+
+{q:"Agar 5 mashina 5 minutda 5 detal qilsa, 100 mashina 100 detalni nechta minutda qiladi?",a:["5","20","100","50"],c:0}
+
+]
+
+let current=0
+let score=0
+
+function showQuestion(){
+
+let q=questions[current]
+
+question.innerText=q.q
+
+let html=""
+
+q.a.forEach((opt,i)=>{
+html+=`<div class="option" onclick="check(${i})">${opt}</div>`
+})
+
+answers.innerHTML=html
+
+}
+
+showQuestion()
+
+function check(i){
+
+clickSound.play()
+
+if(i==questions[current].c){
+score++
+}
+
+current++
+
+if(current<questions.length){
+showQuestion()
+}else{
+
+question.innerText="Test tugadi"
+
+answers.innerHTML=""
+
+score.innerText="Natija: "+score
+
+}
+
+}
+
+let startTime
+
+function startReaction(){
+
+box.style.display="none"
+
+let delay=Math.random()*3000+1000
+
+setTimeout(()=>{
+
+box.style.background="green"
+box.style.display="block"
+
+startTime=new Date().getTime()
+
+},delay)
+
+}
+
+function stopReaction(){
+
+let end=new Date().getTime()
+
+let time=end-startTime
+
+result.innerText="Reaksiya: "+time+" ms"
+
+box.style.display="none"
+
+}
+
+let board=document.getElementById("puzzleBoard")
+
+let numbers=[1,2,3,4,5,6,7,8,""]
+
+function shuffle(){
+
+numbers.sort(()=>Math.random()-0.5)
+
+draw()
+
+}
+
+function draw(){
+
+board.innerHTML=""
+
+numbers.forEach((n,i)=>{
+
+let tile=document.createElement("div")
+
+tile.className="tile"
+
+tile.innerText=n
+
+tile.onclick=()=>move(i)
+
+board.appendChild(tile)
+
+})
+
+}
+
+function move(i){
+
+let empty=numbers.indexOf("")
+
+let swap=[i-1,i+1,i-3,i+3]
+
+if(swap.includes(empty)){
+
+[numbers[i],numbers[empty]]=[numbers[empty],numbers[i]]
+
+draw()
+
+}
+
+}
+
+shuffle()
+
+</script>
+
+</body>
+</html>
