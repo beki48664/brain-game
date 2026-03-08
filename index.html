@@ -206,31 +206,46 @@ let questions = [
 
 {q:"5, 9, 17, 33, ?",a:["49","57","65","70"],c:2}
 
-];
+]
+
+let q = 0
+let score = 0
+let currentUser = "Guest"  // Agar login tizim ishlasa foydalanuvchi nomi qo‘yiladi
+
+function showQuestion(){
+  let question = questions[q]
+  document.getElementById("question").innerText = question.q
+  let answersDiv = document.getElementById("answers")
+  answersDiv.innerHTML = ""
+  for(let i=0;i<question.a.length;i++){
+    let btn = document.createElement("button")
+    btn.innerText = question.a[i]
+    btn.onclick = function(){ check(i) }
+    answersDiv.appendChild(btn)
+  }
+}
+
 function check(i){
+  if(i == questions[q].c) score++
+  q++
+  if(q < questions.length){
+    showQuestion()
+  }else{
+    let iq = Math.floor(70 + (score / questions.length) * 60)
+    let level = ""
+    if(iq<90) level="Past"
+    else if(iq<110) level="O‘rtacha"
+    else if(iq<130) level="Aqlli"
+    else level="Genius"
 
-if(i==questions[q].c)score++
+    document.getElementById("result").innerText =
+      "To'g'ri javob: " + score + " / " + questions.length +
+      " | IQ: " + iq + " | Daraja: " + level
 
-q++
-
-if(q<questions.length){
-
-showQuestion()
-
-}else{
-
-let iq = Math.floor(70 + (score / questions.length) * 60)
-
-result.innerText =
-"To'g'ri javob: " + score + " / " + questions.length +
-" | IQ: " + iq
-
-if(currentUser!="Guest"){
-localStorage.setItem("score_"+currentUser,iq)
-}
-
-}
-
+    if(currentUser != "Guest"){
+      localStorage.setItem("score_" + currentUser, iq)
+    }
+  }
 }
 
 // Reaction Game
